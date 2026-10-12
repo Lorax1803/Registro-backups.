@@ -1,0 +1,476 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Backups</title>
+
+<style>
+:root {
+  --navy: #14243a;
+  --blue: #2463eb;
+  --bg: #f3f6fb;
+  --line: #dce3ed;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: #172033;
+}
+header {
+  background: var(--navy);
+  color: white;
+  padding: 24px;
+}
+header h1 { margin: 0 0 8px; }
+header p { margin: 0; color: #c9d5e6; }
+main { max-width: 1000px; margin: auto; padding: 22px 15px; }
+.card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px;
+  margin-bottom: 20px;
+}
+h2 { margin-top: 0; font-size: 20px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+}
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 7px;
+}
+input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  font-size: 15px;
+}
+button {
+  border: 0;
+  border-radius: 7px;
+  padding: 11px 15px;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 4px 4px 4px 0;
+}
+.primary { background: var(--blue); color: white; }
+.secondary { background: #e9eef6; color: var(--navy); }
+.danger { background: #fee2e2; color: #991b1b; }
+.hidden { display: none !important; }
+.actions { margin-top: 16px; }
+.status { color: #667085; }
+.notice { color: #667085; font-size: 13px; line-height: 1.5; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 600px; }
+th, td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+th { background: #f8fafc; font-size: 13px; }
+.empty { text-align: center; color: #667085; }
+@media(max-width: 700px) {
+  .grid { grid-template-columns: 1fr; }
+  .card { padding: 16px; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <h1>Registro de Backups</h1>
+  <p>Control de salida y llegada de equipos</p>
+</header>
+
+<main>
+  <div class="card">
+    <span class="status" id="profileStatus">Perfil: Técnico</span>
+    <button class="secondary" id="loginButton">
+      Acceso administrador
+    </button>
+  </div>
+
+  <!-- FORMULARIO DISPONIBLE PARA TÉCNICOS -->
+  <section class="card">
+    <h2>Ingresar movimiento</h2>
+
+    <form id="backupForm">
+      <div class="grid">
+        <div>
+          <label for="backupNumber">Número de backup</label>
+          <input id="backupNumber" required maxlength="60"
+                 placeholder="Ej. BK-001">
+        </div>
+
+        <div>
+          <label for="origin">Lugar de salida</label>
+          <input id="origin" required maxlength="120"
+                 placeholder="Ej. Taller central">
+        </div>
+
+        <div>
+          <label for="destination">Lugar de llegada</label>
+          <input id="destination" required maxlength="120"
+                 placeholder="Ej. Sucursal zona 10">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="submit">
+          Enviar movimiento
+        </button>
+        <button class="secondary" type="reset">
+          Limpiar formulario
+        </button>
+      </div>
+    </form>
+
+    <p class="notice">
+      Verifica los datos antes de enviarlos. El técnico no puede
+      consultar el historial ni administrar registros.
+    </p>
+  </section>
+
+  <!-- HISTORIAL SOLO PARA ADMINISTRADOR -->
+  <section class="card hidden" id="historyPanel">
+    <h2>Historial de movimientos</h2>
+
+    <p id="recordCount">0 registros</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Número de backup</th>
+            <th>Lugar de salida</th>
+            <th>Lugar de llegada</th>
+            <th>Fecha y hora</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- OPCIONES EXCLUSIVAS DEL ADMINISTRADOR -->
+  <section class="card hidden" id="adminPanel">
+    <h2>Administración</h2>
+
+    <button class="secondary" id="exportButton">
+      Exportar historial CSV
+    </button>
+
+    <button class="danger" id="clearButton">
+      Eliminar todos los registros
+    </button>
+
+    <hr>
+
+    <h2>Cambiar contraseña</h2>
+
+    <form id="passwordForm">
+      <div class="grid">
+        <div>
+          <label for="currentPassword">Contraseña actual</label>
+          <input type="password" id="currentPassword" required>
+        </div>
+
+        <div>
+          <label for="newPassword">Nueva contraseña</label>
+          <input type="password" id="newPassword"
+                 minlength="10" required>
+        </div>
+
+        <div>
+          <label for="confirmPassword">Confirmar contraseña nueva</label>
+          <input type="password" id="confirmPassword"
+                 minlength="10" required>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="submit">
+          Actualizar contraseña
+        </button>
+      </div>
+    </form>
+
+    <button class="secondary" id="logoutButton">
+      Cerrar sesión
+    </button>
+
+    <p class="notice">
+      Esta versión guarda los datos localmente en este navegador.
+      Para proteger información real, se necesita un servidor con
+      autenticación y permisos.
+    </p>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+/*
+  DEMOSTRACIÓN LOCAL.
+  Cambia la contraseña inicial antes de utilizar el sistema.
+  Esta protección no es adecuada para producción: el código y los
+  datos locales pueden ser inspeccionados por usuarios del dispositivo.
+*/
+const INITIAL_ADMIN_PASSWORD = "Admin123!";
+const DATA_KEY = "backups_data_v1";
+const PASSWORD_KEY = "backups_admin_password_v1";
+
+let isAdmin = false;
+let records = loadRecords();
+let adminPassword =
+  localStorage.getItem(PASSWORD_KEY) || INITIAL_ADMIN_PASSWORD;
+
+const form = document.getElementById("backupForm");
+const historyPanel = document.getElementById("historyPanel");
+const adminPanel = document.getElementById("adminPanel");
+const recordsBody = document.getElementById("recordsBody");
+
+function loadRecords() {
+  try {
+    const data = JSON.parse(localStorage.getItem(DATA_KEY) || "[]");
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecords() {
+  localStorage.setItem(DATA_KEY, JSON.stringify(records));
+}
+
+function setAdmin(value) {
+  isAdmin = value;
+
+  document.getElementById("profileStatus").textContent =
+    isAdmin ? "Perfil: Administrador" : "Perfil: Técnico";
+
+  document.getElementById("loginButton").classList.toggle(
+    "hidden", isAdmin
+  );
+
+  historyPanel.classList.toggle("hidden", !isAdmin);
+  adminPanel.classList.toggle("hidden", !isAdmin);
+
+  if (isAdmin) {
+    renderHistory();
+  } else {
+    // Vaciar el contenido visible del historial al cerrar sesión.
+    recordsBody.replaceChildren();
+  }
+}
+
+function addCell(row, value) {
+  const cell = document.createElement("td");
+  cell.textContent = value;
+  row.appendChild(cell);
+  return cell;
+}
+
+function renderHistory() {
+  if (!isAdmin) return;
+
+  recordsBody.replaceChildren();
+
+  document.getElementById("recordCount").textContent =
+    records.length + (records.length === 1 ? " registro" : " registros");
+
+  if (records.length === 0) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 5;
+    cell.className = "empty";
+    cell.textContent = "No hay movimientos registrados.";
+    row.appendChild(cell);
+    recordsBody.appendChild(row);
+    return;
+  }
+
+  records.forEach((record, index) => {
+    const row = document.createElement("tr");
+
+    addCell(row, record.number);
+    addCell(row, record.origin);
+    addCell(row, record.destination);
+    addCell(row, record.date);
+
+    const actionCell = document.createElement("td");
+    const deleteButton = document.createElement("button");
+
+    deleteButton.type = "button";
+    deleteButton.className = "danger";
+    deleteButton.textContent = "Eliminar";
+
+    deleteButton.addEventListener("click", () => {
+      if (!isAdmin) return;
+
+      if (confirm("¿Deseas eliminar este movimiento?")) {
+        records.splice(index, 1);
+        saveRecords();
+        renderHistory();
+      }
+    });
+
+    actionCell.appendChild(deleteButton);
+    row.appendChild(actionCell);
+    recordsBody.appendChild(row);
+  });
+}
+
+/* Confirmación antes de guardar cualquier movimiento. */
+form.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const number = document.getElementById("backupNumber").value.trim();
+  const origin = document.getElementById("origin").value.trim();
+  const destination = document.getElementById("destination").value.trim();
+
+  if (!number || !origin || !destination) {
+    alert("Completa todos los campos.");
+    return;
+  }
+
+  const message =
+    "Verifica los datos antes de enviar:\n\n" +
+    "Número de backup: " + number + "\n" +
+    "Lugar de salida: " + origin + "\n" +
+    "Lugar de llegada: " + destination + "\n\n" +
+    "¿Estás seguro de que deseas enviar estos datos?";
+
+  if (!confirm(message)) return;
+
+  records.unshift({
+    number,
+    origin,
+    destination,
+    date: new Date().toLocaleString("es-GT")
+  });
+
+  saveRecords();
+  form.reset();
+
+  alert("Movimiento enviado correctamente.");
+
+  // Solo se actualiza el historial si la sesión es administrativa.
+  if (isAdmin) renderHistory();
+});
+
+/* Acceso administrativo. */
+document.getElementById("loginButton").addEventListener("click", () => {
+  const password = prompt("Ingresa la contraseña de administrador.");
+
+  if (password === null) return;
+
+  if (password === adminPassword) {
+    setAdmin(true);
+  } else {
+    alert("Contraseña incorrecta.");
+  }
+});
+
+document.getElementById("logoutButton").addEventListener("click", () => {
+  setAdmin(false);
+});
+
+/* Cambio de contraseña del administrador. */
+document.getElementById("passwordForm").addEventListener(
+  "submit", event => {
+    event.preventDefault();
+
+    if (!isAdmin) {
+      alert("Debes iniciar sesión como administrador.");
+      return;
+    }
+
+    const current =
+      document.getElementById("currentPassword").value;
+    const next =
+      document.getElementById("newPassword").value;
+    const confirmation =
+      document.getElementById("confirmPassword").value;
+
+    if (current !== adminPassword) {
+      alert("La contraseña actual es incorrecta.");
+      return;
+    }
+
+    if (next.length < 10) {
+      alert("La nueva contraseña debe tener al menos 10 caracteres.");
+      return;
+    }
+
+    if (next !== confirmation) {
+      alert("Las contraseñas nuevas no coinciden.");
+      return;
+    }
+
+    if (next === current) {
+      alert("La nueva contraseña debe ser diferente.");
+      return;
+    }
+
+    adminPassword = next;
+    localStorage.setItem(PASSWORD_KEY, adminPassword);
+
+    document.getElementById("passwordForm").reset();
+    alert("Contraseña actualizada correctamente.");
+  }
+);
+
+/* Eliminar todos los registros. */
+document.getElementById("clearButton").addEventListener("click", () => {
+  if (!isAdmin) return;
+
+  if (confirm("¿Eliminar todos los movimientos? Esta acción no se puede deshacer.")) {
+    records = [];
+    saveRecords();
+    renderHistory();
+  }
+});
+
+/* Exportar el historial como CSV compatible con Excel. */
+document.getElementById("exportButton").addEventListener("click", () => {
+  if (!isAdmin) return;
+
+  const rows = [
+    ["Número de backup", "Lugar de salida", "Lugar de llegada", "Fecha y hora"],
+    ...records.map(record => [
+      record.number, record.origin, record.destination, record.date
+    ])
+  ];
+
+  const csv = "\uFEFF" + rows.map(row =>
+    row.map(value =>
+      '"' + String(value).replace(/"/g, '""') + '"'
+    ).join(",")
+  ).join("\r\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "historial_backups.csv";
+  link.click();
+
+  URL.revokeObjectURL(url);
+});
+
+/* La vista inicial siempre es la de técnico y no muestra el historial. */
+setAdmin(false);
+</script>
+</body>
+</html>
